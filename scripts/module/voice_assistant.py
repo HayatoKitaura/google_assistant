@@ -14,7 +14,7 @@ CLOSE_MICROPHONE = embedded_assistant_pb2.DialogStateOut.CLOSE_MICROPHONE
 PLAYING = embedded_assistant_pb2.ScreenOutConfig.PLAYING
 
 
-class SampleAssistant(object):
+class VoiceAssistant(object):
     """Sample Assistant that supports conversations and device actions.
 
     Args:
@@ -66,6 +66,10 @@ class SampleAssistant(object):
         self.conversation_stream.close()
 
     ####################################################################################################
+    def stop(self):
+        self.conversation_stream.stop_recording()
+
+    ####################################################################################################
     def is_grpc_error_unavailable(e):
         is_grpc_error = isinstance(e, grpc.RpcError)
         if is_grpc_error and (e.code() == grpc.StatusCode.UNAVAILABLE):
@@ -85,14 +89,12 @@ class SampleAssistant(object):
 
         Returns: True if conversation should continue.
         """
-        continue_conversation = False
-        end_recognition = False
-        recognition_result = None
+        recognition_result = ""
+        answer = ""
         device_actions_futures = []
 
         self.conversation_stream.start_recording()
         print('Recording audio request.')
-        print('音声認識開始')
 
         def iter_log_assist_requests():
             for c in self.gen_assist_requests():
@@ -109,7 +111,6 @@ class SampleAssistant(object):
 
         # This generator yields AssistResponse proto messages
         # received from the gRPC Google Assistant API.
-        recognition_result = ""
         for resp in self.assistant.Assist(iter_log_assist_requests(),
                                           self.deadline):
             assistant_helpers.log_assist_response_without_audio(resp)
@@ -119,22 +120,34 @@ class SampleAssistant(object):
                 if self.is_debug:
                     print("[Debug] %s" % recognition_result)
 
-            # ユーザー発話終了
-            if resp.event_type == END_OF_UTTERANCE:
-                # print('End of audio request detected.')
-                # print('Stopping recording.')
+            if resp.dialog_state_out.supplemental_display_text:
+                answer = resp.dialog_state_out.supplemental_display_text
+                if self.is_debug:
+                    print("[Speech] [ %s ]\n" % recognition_result)
+                    print("[Answer] [ %s ]\n" % answer)
                 if not self.is_answer:
                     self.conversation_stream.stop_recording()
-                    return recognition_result
+                    return recognition_result, answer
+
+            # ユーザー発話終了
+            #if resp.event_type == END_OF_UTTERANCE:
+                # print('End of audio request detected.')
+                # print('Stopping recording.')
+
+                # if not self.is_answer:
+                #    self.conversation_stream.stop_recording()
+                #    return recognition_result
 
             # アシスタントからの返答再生
-            if len(resp.audio_out.audio_data) > 0:
-                if not self.conversation_stream.playing:
-                    self.conversation_stream.stop_recording()
-                    self.conversation_stream.start_playback()
-                    # print('Playing assistant response.')
-                # 音声再生部分
-                self.conversation_stream.write(resp.audio_out.audio_data)
+            if self.is_answer:
+                if len(resp.audio_out.audio_data) > 0:
+                    if not self.conversation_stream.playing:
+                        self.conversation_stream.stop_recording()
+                        self.conversation_stream.start_playback()
+                        # print('Playing assistant response.')
+                    # 音声再生部分
+                    self.conversation_stream.write(resp.audio_out.audio_data)
+
             if resp.dialog_state_out.conversation_state:
                 conversation_state = resp.dialog_state_out.conversation_state
                 print('Updating conversation state.')
@@ -164,8 +177,10 @@ class SampleAssistant(object):
             concurrent.futures.wait(device_actions_futures)
 
         print('Finished playing assistant response.')
-        self.conversation_stream.stop_playback()
-        return recognition_result
+        print(self.conversation_stream.playing)
+        if self.conversation_stream.playing:
+            self.conversation_stream.stop_playback()
+        return recognition_result, answer
 
     def gen_assist_requests(self):
         """Yields: AssistRequest messages to send to the API."""

@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import click
+import rospy
+from std_msgs.msg import String
+from module import google_assistant
+
+
+# 引数は en-US か ja_jp
+@click.command()
+@click.option("--lang", default="en-US")
+@click.option("--debug", default=False)
+@click.option("--answer", default=False)
+def start(lang, debug, answer):
+    def wakeup():
+        rospy.loginfo("Recognition Start")
+        result, answer = assistant.start()
+        if result.find("you are"):
+            if result.find("in") or result.find("near"):
+
+        pub.publish(result)
+        rospy.loginfo("Result -> %s" % result)
+
+    def stop(message):
+        assistant.stop()
+
+    rospy.init_node('voice_recognition', anonymous=False)
+    rospy.Subscriber("voice_recognition/stop", String, stop)
+    pub = rospy.Publisher('voice_recognition/result', String, queue_size=10)
+    assistant = google_assistant.main(lang, debug, answer)
+    r = rospy.Rate(10)
+
+    while not rospy.is_shutdown():
+        word, answer = assistant.start()
+        if str(word).lower() == "excuse me":
+            wakeup()
+        r.sleep()
+
+
+if __name__ == '__main__':
+    start()

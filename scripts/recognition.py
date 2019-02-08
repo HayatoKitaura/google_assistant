@@ -5,15 +5,11 @@ import rospy
 from std_msgs.msg import String
 from module import google_assistant
 
-#引数は en-US か ja_jp
-@click.command()
-@click.option("--lang", default="en-US")
-@click.option("--debug", default=False)
-@click.option("--answer", default=False)
+
 def start(lang, debug, answer):
     def callback(data):
         rospy.loginfo("Recognition Start")
-        result = assistant.start()
+        result, answer = assistant.start()
         pub.publish(result)
         rospy.loginfo("Result -> %s" % result)
         r.sleep()
@@ -29,4 +25,4 @@ def start(lang, debug, answer):
 
 
 if __name__ == '__main__':
-    start()
+    start("en-US", False, False)

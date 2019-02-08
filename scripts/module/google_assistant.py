@@ -30,7 +30,8 @@ import sys
 
 import json
 
-from module.sample_assistant import *
+from module.voice_assistant import *
+from module.text_assistant import *
 from googlesamples.assistant.grpc import audio_helpers, device_helpers
 
 ASSISTANT_API_ENDPOINT = 'embeddedassistant.googleapis.com'
@@ -157,7 +158,14 @@ def main(language, is_debug, is_answer):
     #   アシスタント起動
     #
     ####################################################################################################
-    return SampleAssistant(language, device_model_id, device_id,
+    '''
+    text=None
+    if text is not None:
+        
+    return TextAssistant(language, device_model_id, device_id, IS_DISPLAY,
+                             grpc_channel, grpc_deadline)
+'''
+    return VoiceAssistant(language, device_model_id, device_id,
                            conversation_stream, IS_DISPLAY,
                            grpc_channel, grpc_deadline,
                            device_handler, is_debug, is_answer)
