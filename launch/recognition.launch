@@ -1,0 +1,7 @@
+<launch>
+
+  <node pkg="google_assistant" name="recognition" type="recognition.py" output="screen">
+  </node>
+
+</launch>
+
