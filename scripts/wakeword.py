@@ -17,6 +17,7 @@ def start(lang, debug, answer):
         result, answer = assistant.start()
         if result.find("you are"):
             if result.find("in") or result.find("near"):
+                print("[Location]: %s" % result)
 
         pub.publish(result)
         rospy.loginfo("Result -> %s" % result)
