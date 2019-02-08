@@ -1,0 +1,7 @@
+<launch>
+
+  <node pkg="google_assistant" name="wakeword" type="wakeword.py" output="screen">
+  </node>
+
+</launch>
+
