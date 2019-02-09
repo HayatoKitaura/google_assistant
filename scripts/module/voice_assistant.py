@@ -94,7 +94,7 @@ class VoiceAssistant(object):
         device_actions_futures = []
 
         self.conversation_stream.start_recording()
-        print('Recording audio request.')
+        print('... Recording audio request ...')
 
         def iter_log_assist_requests():
             for c in self.gen_assist_requests():
@@ -130,7 +130,10 @@ class VoiceAssistant(object):
                     return recognition_result, answer
 
             # ユーザー発話終了
-            #if resp.event_type == END_OF_UTTERANCE:
+            if resp.event_type == END_OF_UTTERANCE:
+                if not self.is_debug and not self.is_answer:
+                    return recognition_result, answer
+
                 # print('End of audio request detected.')
                 # print('Stopping recording.')
 
@@ -173,11 +176,10 @@ class VoiceAssistant(object):
                 system_browser.display(resp.screen_out.data)
 
         if len(device_actions_futures):
-            print('Waiting for device executions to complete.')
+            #print('Waiting for device executions to complete.')
             concurrent.futures.wait(device_actions_futures)
 
         print('Finished playing assistant response.')
-        print(self.conversation_stream.playing)
         if self.conversation_stream.playing:
             self.conversation_stream.stop_playback()
         return recognition_result, answer

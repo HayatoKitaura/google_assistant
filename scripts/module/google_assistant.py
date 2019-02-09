@@ -43,7 +43,7 @@ IS_DISPLAY = False
 #   本処理
 #
 ####################################################################################################
-def main(language, is_debug, is_answer):
+def main(language, is_debug, is_answer, device_id=None, device_model_id=None):
     ####################################################################################################
     #
     #   初期定義
@@ -57,8 +57,6 @@ def main(language, is_debug, is_answer):
     audio_iter_size = audio_helpers.DEFAULT_AUDIO_ITER_SIZE
     audio_block_size = audio_helpers.DEFAULT_AUDIO_DEVICE_BLOCK_SIZE
     audio_flush_size = audio_helpers.DEFAULT_AUDIO_DEVICE_FLUSH_SIZE
-    device_id = None
-    device_model_id = None
     ####################################################################################################
     #
     #   取り扱い説明書
@@ -104,7 +102,7 @@ def main(language, is_debug, is_answer):
     ####################################################################################################
     grpc_channel = google.auth.transport.grpc.secure_authorized_channel(
         credentials, http_request, ASSISTANT_API_ENDPOINT)
-    print("connection -> %s" % ASSISTANT_API_ENDPOINT)
+    # print("connection -> %s" % ASSISTANT_API_ENDPOINT)
 
     ####################################################################################################
     #
@@ -114,12 +112,12 @@ def main(language, is_debug, is_answer):
     ####################################################################################################
     audio_device = None
     audio_sink = audio_source = (
-        audio_device or audio_helpers.SoundDeviceStream(
-            sample_rate=audio_sample_rate,
-            sample_width=audio_sample_width,
-            block_size=audio_block_size,
-            flush_size=audio_flush_size
-        )
+            audio_device or audio_helpers.SoundDeviceStream(
+        sample_rate=audio_sample_rate,
+        sample_width=audio_sample_width,
+        block_size=audio_block_size,
+        flush_size=audio_flush_size
+    )
     )
 
     ####################################################################################################
@@ -134,17 +132,19 @@ def main(language, is_debug, is_answer):
         sample_width=audio_sample_width,
     )
 
-    try:
-        with open(device_config) as f:
-            device = json.load(f)
-            device_id = device['id']
-            device_model_id = device['model_id']
-            print("Using device model %s and device id %s",
-                  device_model_id,
-                  device_id)
-    except Exception as e:
-        print(e)
+    if device_id is None or device_model_id is None:
+        try:
+            with open(device_config) as f:
+                device = json.load(f)
+                device_id = device['id']
+                device_model_id = device['model_id']
+                print("Using device model %s and device id %s",
+                      device_model_id,
+                      device_id)
 
+        except Exception as e:
+            print(e)
+            sys.exit(1)
     ####################################################################################################
     #
     #   コールバック設定
@@ -166,6 +166,6 @@ def main(language, is_debug, is_answer):
                              grpc_channel, grpc_deadline)
 '''
     return VoiceAssistant(language, device_model_id, device_id,
-                           conversation_stream, IS_DISPLAY,
-                           grpc_channel, grpc_deadline,
-                           device_handler, is_debug, is_answer)
+                          conversation_stream, IS_DISPLAY,
+                          grpc_channel, grpc_deadline,
+                          device_handler, is_debug, is_answer)
