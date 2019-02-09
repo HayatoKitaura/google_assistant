@@ -6,6 +6,12 @@ from std_msgs.msg import String
 from module import google_assistant
 
 
+
+#引数は en-US か ja_jp
+@click.command()
+@click.option("--lang", default="en-US")
+@click.option("--debug", default=False)
+@click.option("--answer", default=False)
 def start(lang, debug, answer):
     def callback(data):
         rospy.loginfo("Recognition Start")
