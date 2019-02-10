@@ -18,6 +18,7 @@ def start(lang, debug, answer):
         result, answer = assistant.start()
         pub.publish(result)
         rospy.loginfo("Result -> %s" % result)
+        rospy.loginfo("Answer -> %s" % answer)
         r.sleep()
 
     rospy.init_node('voice_recognition', anonymous=False)
@@ -31,4 +32,4 @@ def start(lang, debug, answer):
 
 
 if __name__ == '__main__':
-    start("en-US", False, False)
+    start()
