@@ -23,12 +23,10 @@ def handler(signal, frame):
 
 signal.signal(signal.SIGINT, handler)
 
-'''
 @click.command()
-@click.option("--lang", default="en-US")
+@click.option("--lang", default="ja_jp")
 @click.option("--debug", default=False)
 @click.option("--answer", default=False)
-'''
 
 
 def start(lang, debug, answer):

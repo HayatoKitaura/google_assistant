@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding: utf-8
 # Copyright (C) 2017 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -161,7 +161,7 @@ def main(language, is_debug, is_answer, device_id=None, device_model_id=None):
     '''
     text=None
     if text is not None:
-        
+
     return TextAssistant(language, device_model_id, device_id, IS_DISPLAY,
                              grpc_channel, grpc_deadline)
 '''
